@@ -5,7 +5,7 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { Spinner } from "@/components/ui/spinner";
 import { Button, ButtonText } from "@/components/ui/button";
-import { useStoreStore } from "../store/store";
+import { useStoreStore } from "../store";
 
 export default function StoreDetailsScreen() {
   const params = useLocalSearchParams<{ id: string | string[] }>();
