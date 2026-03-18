@@ -66,7 +66,7 @@ export default function StoresScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => router.push(`/store/${item.id}`)}
+              onPress={() => router.push(`/store/details/${item.id}`)}
               style={styles.card}
             >
               <Heading size="md" style={styles.title}>

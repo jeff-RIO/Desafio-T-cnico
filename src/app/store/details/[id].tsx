@@ -1,5 +1,12 @@
-import { useEffect, useMemo } from "react";
-import { Alert, FlatList, Platform, StyleSheet, View } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Platform,
+  StyleSheet,
+  View,
+  TextInput,
+} from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
@@ -9,6 +16,7 @@ import { useStoreStore } from "../store";
 
 export default function StoreDetailsScreen() {
   const params = useLocalSearchParams<{ id: string | string[] }>();
+  const [search, setSearch] = useState("");
 
   const storeId = useMemo(() => {
     return Array.isArray(params.id) ? params.id[0] : params.id;
@@ -30,6 +38,23 @@ export default function StoreDetailsScreen() {
     fetchStoreById(storeId);
     fetchProductsByStore(storeId);
   }, [storeId, fetchStoreById, fetchProductsByStore]);
+
+  const filteredProducts = useMemo(() => {
+    const normalizedSearch = search.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return storeProducts;
+    }
+
+    return storeProducts.filter((product) => {
+      const nameMatch = product.name.toLowerCase().includes(normalizedSearch);
+      const categoryMatch = product.category
+        .toLowerCase()
+        .includes(normalizedSearch);
+
+      return nameMatch || categoryMatch;
+    });
+  }, [storeProducts, search]);
 
   const handleDeleteStore = async () => {
     if (!storeId) return;
@@ -157,15 +182,29 @@ export default function StoreDetailsScreen() {
         <ButtonText>+ Novo Produto</ButtonText>
       </Button>
 
+      <View style={styles.searchContainer}>
+        <Text size="sm" style={styles.searchLabel}>
+          Buscar produto
+        </Text>
+
+        <TextInput
+          style={styles.searchInput}
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Buscar por nome ou categoria"
+          placeholderTextColor="#94a3b8"
+        />
+      </View>
+
       <Heading size="lg" style={styles.sectionTitle}>
         Produtos da Loja
       </Heading>
 
       <FlatList
-        data={storeProducts}
+        data={filteredProducts}
         keyExtractor={(item) => item.id}
         contentContainerStyle={
-          storeProducts.length === 0
+          filteredProducts.length === 0
             ? styles.emptyContainer
             : styles.listContent
         }
@@ -206,7 +245,11 @@ export default function StoreDetailsScreen() {
         )}
         ListEmptyComponent={
           <View style={styles.center}>
-            <Text>Nenhum produto cadastrado para esta loja.</Text>
+            <Text>
+              {search.trim()
+                ? "Nenhum produto encontrado para a busca."
+                : "Nenhum produto cadastrado para esta loja."}
+            </Text>
           </View>
         }
       />
@@ -273,6 +316,24 @@ const styles = StyleSheet.create({
   addButton: {
     marginBottom: 16,
     backgroundColor: "#0284c7",
+  },
+  searchContainer: {
+    marginBottom: 16,
+  },
+  searchLabel: {
+    marginBottom: 8,
+    fontWeight: "bold",
+    color: "#334155",
+  },
+  searchInput: {
+    backgroundColor: "#ffffff",
+    borderWidth: 1,
+    borderColor: "#cbd5e1",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    fontSize: 16,
+    color: "#0f172a",
   },
   sectionTitle: {
     marginBottom: 12,
