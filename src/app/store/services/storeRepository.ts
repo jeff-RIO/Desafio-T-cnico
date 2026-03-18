@@ -1,4 +1,4 @@
-import { Store } from '../types';
+import { Store } from '../types/types';
 
 export const StoreRepository = {
   getStores: async (): Promise<Store[]> => {

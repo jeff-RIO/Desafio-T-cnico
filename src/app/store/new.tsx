@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, TextInput, StyleSheet, Alert, Platform } from "react-native";
 import { router } from "expo-router";
-import { useStoreStore } from "../../features/store/store";
+import { useStoreStore } from "../store/store";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { Button, ButtonText } from "@/components/ui/button";

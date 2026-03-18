@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { FlatList, View, TouchableOpacity, StyleSheet } from "react-native";
 import { router } from "expo-router";
-import { useStoreStore } from "../features/store/store";
+import { useStoreStore } from "../app/store/store";
 import { Text } from "@/components/ui/text";
 import { Heading } from "@/components/ui/heading";
 import { Spinner } from "@/components/ui/spinner";
