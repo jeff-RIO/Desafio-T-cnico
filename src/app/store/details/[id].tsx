@@ -21,6 +21,7 @@ export default function StoreDetailsScreen() {
     fetchStoreById,
     fetchProductsByStore,
     removeStore,
+    removeProduct,
   } = useStoreStore();
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export default function StoreDetailsScreen() {
     fetchProductsByStore(storeId);
   }, [storeId, fetchStoreById, fetchProductsByStore]);
 
-  const handleDelete = async () => {
+  const handleDeleteStore = async () => {
     if (!storeId) return;
 
     const confirmDelete = async () => {
@@ -53,6 +54,41 @@ export default function StoreDetailsScreen() {
     Alert.alert(
       "Excluir Loja",
       "Tem certeza que deseja excluir esta loja e seus produtos?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => {
+            confirmDelete();
+          },
+        },
+      ],
+    );
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!storeId) return;
+
+    const confirmDelete = async () => {
+      await removeProduct(productId, storeId);
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "Tem certeza que deseja excluir este produto?",
+      );
+
+      if (confirmed) {
+        await confirmDelete();
+      }
+
+      return;
+    }
+
+    Alert.alert(
+      "Excluir Produto",
+      "Tem certeza que deseja excluir este produto?",
       [
         { text: "Cancelar", style: "cancel" },
         {
@@ -109,7 +145,7 @@ export default function StoreDetailsScreen() {
           <ButtonText>Editar Loja</ButtonText>
         </Button>
 
-        <Button style={styles.dangerButton} onPress={handleDelete}>
+        <Button style={styles.dangerButton} onPress={handleDeleteStore}>
           <ButtonText>Excluir Loja</ButtonText>
         </Button>
       </View>
@@ -148,6 +184,24 @@ export default function StoreDetailsScreen() {
             <Text size="sm" style={styles.category}>
               Categoria: {item.category}
             </Text>
+
+            <View style={styles.productActionsRow}>
+              <Button
+                style={styles.productEditButton}
+                onPress={() =>
+                  router.push(`/product/edit/${item.id}?storeId=${storeId}`)
+                }
+              >
+                <ButtonText>Editar</ButtonText>
+              </Button>
+
+              <Button
+                style={styles.productDeleteButton}
+                onPress={() => handleDeleteProduct(item.id)}
+              >
+                <ButtonText>Excluir</ButtonText>
+              </Button>
+            </View>
           </View>
         )}
         ListEmptyComponent={
@@ -251,5 +305,18 @@ const styles = StyleSheet.create({
   price: {
     color: "#0284c7",
     fontWeight: "bold",
+  },
+  productActionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 12,
+  },
+  productEditButton: {
+    flex: 1,
+    backgroundColor: "#0284c7",
+  },
+  productDeleteButton: {
+    flex: 1,
+    backgroundColor: "#dc2626",
   },
 });

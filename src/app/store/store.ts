@@ -32,6 +32,16 @@ type StoreState = {
     price: number;
     storeId: string;
   }) => Promise<void>;
+  updateProduct: (
+    id: string,
+    data: {
+      name: string;
+      category: string;
+      price: number;
+      storeId: string;
+    }
+  ) => Promise<void>;
+  removeProduct: (id: string, storeId: string) => Promise<void>;
 };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -154,10 +164,8 @@ export const useStoreStore = create<StoreState>((set, get) => ({
         method: "DELETE",
       });
 
-      const currentStores = get().stores.filter((store) => store.id !== id);
-
       set({
-        stores: currentStores,
+        stores: get().stores.filter((store) => store.id !== id),
         selectedStore: null,
         storeProducts: [],
       });
@@ -198,6 +206,61 @@ export const useStoreStore = create<StoreState>((set, get) => ({
       });
     } catch (error) {
       console.error("Erro ao cadastrar produto:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateProduct: async (id, payload) => {
+    set({ isLoading: true });
+
+    try {
+      const response = await request<{ product: ProductItem }>(`/mock-api/products/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      set({
+        storeProducts: get().storeProducts.map((product) =>
+          product.id === id ? response.product : product
+        ),
+      });
+    } catch (error) {
+      console.error("Erro ao editar produto:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  removeProduct: async (id, storeId) => {
+    set({ isLoading: true });
+
+    try {
+      await request<{ success: boolean }>(`/mock-api/products/${id}`, {
+        method: "DELETE",
+      });
+
+      const currentSelectedStore = get().selectedStore;
+      const currentStores = get().stores;
+
+      set({
+        storeProducts: get().storeProducts.filter((product) => product.id !== id),
+        selectedStore: currentSelectedStore
+          ? {
+              ...currentSelectedStore,
+              productsCount: Math.max(0, currentSelectedStore.productsCount - 1),
+            }
+          : currentSelectedStore,
+        stores: currentStores.map((store) =>
+          store.id === storeId
+            ? { ...store, productsCount: Math.max(0, store.productsCount - 1) }
+            : store
+        ),
+      });
+    } catch (error) {
+      console.error("Erro ao excluir produto:", error);
       throw error;
     } finally {
       set({ isLoading: false });

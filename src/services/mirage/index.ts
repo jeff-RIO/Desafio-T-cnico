@@ -171,6 +171,44 @@ export function makeServer({ environment = "development" } = {}) {
         };
       });
 
+      this.put("/products/:id", (schema, request) => {
+        const product: any = schema.find("product", request.params.id);
+
+        if (!product) {
+          return new Response(404, {}, { error: "Produto não encontrado" });
+        }
+
+        const attrs = JSON.parse(request.requestBody);
+
+        product.update({
+          name: attrs.name,
+          category: attrs.category,
+          price: attrs.price,
+        });
+
+        return {
+          product: {
+            id: product.id,
+            name: product.name,
+            category: product.category,
+            price: product.price,
+            storeId: product.storeId,
+          },
+        };
+      });
+
+      this.delete("/products/:id", (schema, request) => {
+        const product: any = schema.find("product", request.params.id);
+
+        if (!product) {
+          return new Response(404, {}, { error: "Produto não encontrado" });
+        }
+
+        product.destroy();
+
+        return { success: true };
+      });
+
       this.passthrough("http://localhost:8081/**");
       this.passthrough("/_expo/**");
       this.passthrough();
