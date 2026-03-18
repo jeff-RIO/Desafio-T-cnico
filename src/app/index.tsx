@@ -1,6 +1,11 @@
 import { useEffect } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
+import { FlatList, View, TouchableOpacity, StyleSheet } from "react-native";
+import { router } from "expo-router";
 import { useStoreStore } from "../features/stores/store";
+import { Text } from "@/components/ui/text";
+import { Heading } from "@/components/ui/heading";
+import { Spinner } from "@/components/ui/spinner";
+import { Fab, FabLabel } from "@/components/ui/fab";
 
 export default function StoresScreen() {
   const { stores, isLoading, fetchStores } = useStoreStore();
@@ -10,37 +15,95 @@ export default function StoresScreen() {
   }, [fetchStores]);
 
   return (
-    <View style={{ flex: 1, padding: 16, backgroundColor: "#f5f5f5" }}>
+    <View style={styles.container}>
       {isLoading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
+        <View style={styles.center}>
+          <Spinner size="large" />
+        </View>
       ) : (
         <FlatList
           data={stores}
           keyExtractor={(item) => item.id}
+          contentContainerStyle={{ paddingBottom: 80 }}
           renderItem={({ item }) => (
-            <View
-              style={{
-                backgroundColor: "white",
-                padding: 16,
-                marginBottom: 12,
-                borderRadius: 8,
-                shadowColor: "#000",
-                shadowOpacity: 0.1,
-                shadowRadius: 4,
-                elevation: 2,
-              }}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push(`/store/${item.id}`)}
+              style={styles.card}
             >
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+              <Heading size="md" style={styles.title}>
                 {item.name}
-              </Text>
-              <Text style={{ color: "gray", marginTop: 4 }}>
+              </Heading>
+              <Text size="sm" style={styles.address}>
                 {item.address}
               </Text>
-            </View>
+              <View style={styles.badge}>
+                <Text size="xs" style={styles.badgeText}>
+                  {item.products ? item.products.length : 0} Produtos
+                </Text>
+              </View>
+            </TouchableOpacity>
           )}
-          ListEmptyComponent={<Text>Nenhuma loja cadastrada.</Text>}
+          ListEmptyComponent={
+            <View style={styles.center}>
+              <Text>Nenhuma loja cadastrada.</Text>
+            </View>
+          }
         />
       )}
+
+      <Fab
+        placement="bottom right"
+        size="md"
+        onPress={() => router.push("/store/new")}
+      >
+        <FabLabel>+ Nova Loja</FabLabel>
+      </Fab>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f8fafc",
+    padding: 16,
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 40,
+  },
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 20,
+    marginBottom: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  title: {
+    marginBottom: 4,
+  },
+  address: {
+    color: "#64748b",
+    marginBottom: 12,
+  },
+  badge: {
+    backgroundColor: "#e0f2fe",
+    alignSelf: "flex-start",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  badgeText: {
+    color: "#0284c7",
+    fontWeight: "bold",
+  },
+});

@@ -36,6 +36,10 @@ export function makeServer({ environment = 'development' } = {}) {
         let store = schema.find('store', storeId);
         return store ? store.products : [];
       });
+
+      this.passthrough('http://localhost:8081/**');
+      this.passthrough('/_expo/**');
+      this.passthrough();
     },
   });
 }

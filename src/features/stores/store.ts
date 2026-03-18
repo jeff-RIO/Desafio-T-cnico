@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Store } from '../stores/types/types';
+import { Store } from './types';
 import { StoreRepository } from './services/storeRepository';
 
 interface StoreState {
