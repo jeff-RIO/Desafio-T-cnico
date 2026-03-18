@@ -39,7 +39,7 @@ export default function StoresScreen() {
               </Text>
               <View style={styles.badge}>
                 <Text size="xs" style={styles.badgeText}>
-                  {item.products ? item.products.length : 0} Produtos
+                  {item.productsCount ?? 0} Produtos
                 </Text>
               </View>
             </TouchableOpacity>

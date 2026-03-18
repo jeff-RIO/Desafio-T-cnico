@@ -1,9 +1,10 @@
 import { useEffect, useMemo } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { Spinner } from "@/components/ui/spinner";
+import { Button, ButtonText } from "@/components/ui/button";
 import { useStoreStore } from "../store/store";
 
 export default function StoreDetailsScreen() {
@@ -62,6 +63,13 @@ export default function StoreDetailsScreen() {
           </Text>
         </View>
       </View>
+
+      <Button
+        style={styles.addButton}
+        onPress={() => router.push(`/product/new?storeId=${storeId}`)}
+      >
+        <ButtonText>+ Novo Produto</ButtonText>
+      </Button>
 
       <Heading size="lg" style={styles.sectionTitle}>
         Produtos da Loja
@@ -144,6 +152,10 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "#0284c7",
     fontWeight: "bold",
+  },
+  addButton: {
+    marginBottom: 16,
+    backgroundColor: "#0284c7",
   },
   sectionTitle: {
     marginBottom: 12,

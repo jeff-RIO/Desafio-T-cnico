@@ -4,7 +4,7 @@ export type StoreItem = {
   id: string;
   name: string;
   address: string;
-  products?: string[];
+  productsCount: number;
 };
 
 export type ProductItem = {
@@ -12,6 +12,7 @@ export type ProductItem = {
   name: string;
   category: string;
   price: number;
+  storeId?: string;
 };
 
 type StoreState = {
@@ -23,6 +24,12 @@ type StoreState = {
   fetchStoreById: (id: string) => Promise<void>;
   fetchProductsByStore: (storeId: string) => Promise<void>;
   addStore: (data: { name: string; address: string }) => Promise<void>;
+  addProduct: (data: {
+    name: string;
+    category: string;
+    price: number;
+    storeId: string;
+  }) => Promise<void>;
 };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -41,7 +48,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   return response.json();
 }
 
-export const useStoreStore = create<StoreState>((set) => ({
+export const useStoreStore = create<StoreState>((set, get) => ({
   stores: [],
   selectedStore: null,
   storeProducts: [],
@@ -104,6 +111,41 @@ export const useStoreStore = create<StoreState>((set) => ({
       set({ stores: data.stores ?? [] });
     } catch (error) {
       console.error("Erro ao cadastrar loja:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  addProduct: async (payload) => {
+    set({ isLoading: true });
+
+    try {
+      const response = await request<{ product: ProductItem }>("/mock-api/products", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      const currentProducts = get().storeProducts;
+      const currentSelectedStore = get().selectedStore;
+      const currentStores = get().stores;
+
+      set({
+        storeProducts: [...currentProducts, response.product],
+        selectedStore: currentSelectedStore
+          ? {
+              ...currentSelectedStore,
+              productsCount: currentSelectedStore.productsCount + 1,
+            }
+          : currentSelectedStore,
+        stores: currentStores.map((store) =>
+          store.id === payload.storeId
+            ? { ...store, productsCount: store.productsCount + 1 }
+            : store
+        ),
+      });
+    } catch (error) {
+      console.error("Erro ao cadastrar produto:", error);
       throw error;
     } finally {
       set({ isLoading: false });
