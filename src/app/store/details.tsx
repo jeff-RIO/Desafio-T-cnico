@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { FlatList, StyleSheet, View } from "react-native";
+import { Alert, FlatList, Platform, StyleSheet, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
@@ -20,6 +20,7 @@ export default function StoreDetailsScreen() {
     isLoading,
     fetchStoreById,
     fetchProductsByStore,
+    removeStore,
   } = useStoreStore();
 
   useEffect(() => {
@@ -28,6 +29,42 @@ export default function StoreDetailsScreen() {
     fetchStoreById(storeId);
     fetchProductsByStore(storeId);
   }, [storeId, fetchStoreById, fetchProductsByStore]);
+
+  const handleDelete = async () => {
+    if (!storeId) return;
+
+    const confirmDelete = async () => {
+      await removeStore(storeId);
+      router.replace("/");
+    };
+
+    if (Platform.OS === "web") {
+      const confirmed = window.confirm(
+        "Tem certeza que deseja excluir esta loja e seus produtos?",
+      );
+
+      if (confirmed) {
+        await confirmDelete();
+      }
+
+      return;
+    }
+
+    Alert.alert(
+      "Excluir Loja",
+      "Tem certeza que deseja excluir esta loja e seus produtos?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Excluir",
+          style: "destructive",
+          onPress: () => {
+            confirmDelete();
+          },
+        },
+      ],
+    );
+  };
 
   if (isLoading && !selectedStore) {
     return (
@@ -62,6 +99,19 @@ export default function StoreDetailsScreen() {
             {storeProducts.length !== 1 ? "s" : ""}
           </Text>
         </View>
+      </View>
+
+      <View style={styles.actionsRow}>
+        <Button
+          style={styles.primaryButton}
+          onPress={() => router.push(`/store/edit/${storeId}`)}
+        >
+          <ButtonText>Editar Loja</ButtonText>
+        </Button>
+
+        <Button style={styles.dangerButton} onPress={handleDelete}>
+          <ButtonText>Excluir Loja</ButtonText>
+        </Button>
       </View>
 
       <Button
@@ -152,6 +202,19 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "#0284c7",
     fontWeight: "bold",
+  },
+  actionsRow: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 16,
+  },
+  primaryButton: {
+    flex: 1,
+    backgroundColor: "#0284c7",
+  },
+  dangerButton: {
+    flex: 1,
+    backgroundColor: "#dc2626",
   },
   addButton: {
     marginBottom: 16,

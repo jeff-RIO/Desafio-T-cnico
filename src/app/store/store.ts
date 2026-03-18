@@ -24,6 +24,8 @@ type StoreState = {
   fetchStoreById: (id: string) => Promise<void>;
   fetchProductsByStore: (storeId: string) => Promise<void>;
   addStore: (data: { name: string; address: string }) => Promise<void>;
+  updateStore: (id: string, data: { name: string; address: string }) => Promise<void>;
+  removeStore: (id: string) => Promise<void>;
   addProduct: (data: {
     name: string;
     category: string;
@@ -111,6 +113,56 @@ export const useStoreStore = create<StoreState>((set, get) => ({
       set({ stores: data.stores ?? [] });
     } catch (error) {
       console.error("Erro ao cadastrar loja:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  updateStore: async (id, payload) => {
+    set({ isLoading: true });
+
+    try {
+      const response = await request<{ store: StoreItem }>(`/mock-api/stores/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(payload),
+      });
+
+      const currentStores = get().stores;
+      const currentSelectedStore = get().selectedStore;
+
+      set({
+        stores: currentStores.map((store) =>
+          store.id === id ? response.store : store
+        ),
+        selectedStore:
+          currentSelectedStore?.id === id ? response.store : currentSelectedStore,
+      });
+    } catch (error) {
+      console.error("Erro ao editar loja:", error);
+      throw error;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  removeStore: async (id) => {
+    set({ isLoading: true });
+
+    try {
+      await request<{ success: boolean }>(`/mock-api/stores/${id}`, {
+        method: "DELETE",
+      });
+
+      const currentStores = get().stores.filter((store) => store.id !== id);
+
+      set({
+        stores: currentStores,
+        selectedStore: null,
+        storeProducts: [],
+      });
+    } catch (error) {
+      console.error("Erro ao excluir loja:", error);
       throw error;
     } finally {
       set({ isLoading: false });

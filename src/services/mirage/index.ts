@@ -94,6 +94,39 @@ export function makeServer({ environment = "development" } = {}) {
         };
       });
 
+      this.put("/stores/:id", (schema, request) => {
+        const store: any = schema.find("store", request.params.id);
+
+        if (!store) {
+          return new Response(404, {}, { error: "Loja não encontrada" });
+        }
+
+        const attrs = JSON.parse(request.requestBody);
+        store.update(attrs);
+
+        return {
+          store: {
+            id: store.id,
+            name: store.name,
+            address: store.address,
+            productsCount: store.products.models.length,
+          },
+        };
+      });
+
+      this.delete("/stores/:id", (schema, request) => {
+        const store: any = schema.find("store", request.params.id);
+
+        if (!store) {
+          return new Response(404, {}, { error: "Loja não encontrada" });
+        }
+
+        store.products.models.forEach((product: any) => product.destroy());
+        store.destroy();
+
+        return { success: true };
+      });
+
       this.get("/stores/:id/products", (schema, request) => {
         const store: any = schema.find("store", request.params.id);
 
