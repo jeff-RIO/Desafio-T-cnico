@@ -1,6 +1,11 @@
 import { Stack } from "expo-router";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
-import "@/global.css"; // Importante para o NativeWind/Gluestack funcionar
+import "@/global.css";
+import { makeServer } from "../services/mirage";
+
+if (!(global as any).mirageServer) {
+  (global as any).mirageServer = makeServer();
+}
 
 export default function RootLayout() {
   return (
@@ -10,7 +15,6 @@ export default function RootLayout() {
           name="index"
           options={{ title: "Lojas", headerShown: true }}
         />
-        {/* Futuramente vamos adicionar a tela de detalhes da loja aqui */}
       </Stack>
     </GluestackUIProvider>
   );
